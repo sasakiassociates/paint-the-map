@@ -22,13 +22,13 @@ let mapOptions = {
 let startCenter = [gupFloat('lat', 42.3601), gupFloat('lon', -71.0589)];
 
 const paletteOptions = {
-    'color1': {color: '#768cc8', title: 'Color 1'},
-    'color2': {color: '#d27f2b', title: 'Color 2'},
-    'color3': {color: '#9b63cb', title: 'Color 3'},
-    'color4': {color: '#84a73d', title: 'Color 4'},
-    'color5': {color: '#c65a88', title: 'Color 5'},
-    'color6': {color: '#5ca372', title: 'Color 6'},
-    'color7': {color: '#c2674c', title: 'Color 7'},
+    'color1': {color: '#90d343', title: 'Color 1'},
+    'color2': {color: '#9867ce', title: 'Color 2'},
+    'color3': {color: '#d29934', title: 'Color 3'},
+    'color4': {color: '#57bfba', title: 'Color 4'},
+    'color5': {color: '#c85f45', title: 'Color 5'},
+    'color6': {color: '#82ae63', title: 'Color 6'},
+    'color7': {color: '#c95d8d', title: 'Color 7'},
 };
 
 function setupCustom(map, methods, overlays) {

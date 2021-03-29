@@ -82,7 +82,7 @@ $(window).bind('resize', function () {
 $(window).trigger('resize');
 
 const setupMap = function () {
-    L.mapbox.accessToken = 'pk.eyJ1IjoidGFkaXJhbWFuIiwiYSI6IktzUnNGa28ifQ.PY_hnRMhS94SZmIR2AIgug';
+    L.mapbox.accessToken = mapBoxAccessToken;
 
     const map = L.mapbox.map('map', null, mapOptions).setView(startCenter, mapOptions.initZoom);
     const methods = {

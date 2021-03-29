@@ -19,6 +19,8 @@ let mapOptions = {
     maxZoom: 20
 };
 
+const mapBoxAccessToken = 'ENTER YOUR ACCESS TOKEN';
+
 let startCenter = [gupFloat('lat', 42.3601), gupFloat('lon', -71.0589)];
 
 const paletteOptions = {

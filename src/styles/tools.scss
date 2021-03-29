@@ -1,0 +1,125 @@
+@import "core";
+
+$btn-wd: 66px;
+$btn-ht: 67px;
+$btn-gap: 10px;
+$btn-text-ht: 20px;
+@mixin tool-buttons($ids) {
+  @each $s in $ids {
+    .#{$s} {
+      background-image: url("img/#{$s}.png");
+    }
+  }
+}
+
+$tools: zoomPan, marker, eraser, paint_bucket;
+$btns: undo, redo, save, load, new;
+
+@include tool-buttons($tools);
+@include tool-buttons($btns);
+
+
+
+.non-toggle-btn {
+  .tool-button {
+    background-color: #a5a5a5;
+  }
+  float: right;
+}
+
+.toggle-btn {
+  float: left;
+  .tool-button {
+    background-color: #626262;
+    &.toggle-btn-highlight {
+      background-color: #171717;
+    }
+  }
+  //background-color: #626262;
+}
+
+.brush-size-selector {
+  float: left;
+  width: 250px;
+  margin: 10px;
+}
+
+.brush-size-indicator {
+  display: inline-block;
+  background-color: #ffffff;
+  opacity: 0.5;
+}
+
+.brush-size-slider {
+  display: inline-block;
+
+  margin: 20px;
+  width: 150px;
+}
+
+
+
+#toolbar {
+  $break-full-w: 460px;
+
+  //background-color: #4d4d4d;
+  height: $btn-gap + $btn-ht + $btn-text-ht;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  //
+  //@media screen and (max-width: $break-full-w) {
+  //  right: 0;
+  //}
+  //width: 456px;
+
+  @media screen and (max-width: $break-full-w) {
+
+    @include scale-uniform(0.9);
+    left: -23px;
+  }
+  @media screen and (max-width: $break-full-w - 30px) {
+    @include scale-uniform(0.8);
+    left: -45px;
+    width: 456px;
+  }
+  @media screen and (max-width: $break-full-w - 50px) {
+    @include scale-uniform(0.7);
+    left: -55px;
+    width: 456px;
+  }
+
+  .tool-button-titled {
+    margin: $btn-gap / 2;
+
+    .tool-label {
+      font-family: 'Open Sans', sans-serif;
+      font-weight: 300;
+      font-size: 0.8em;
+      color: white;
+      text-align: center;
+    }
+    .tool-button {
+      cursor: pointer;
+      @include size($btn-wd, $btn-ht);
+      @include rounded(10px);
+      @media screen and (max-width: $break-full-w) {
+        //@include size($btn-wd*0.9, $btn-ht*0.9);
+        //@include scale-uniform(0.9);
+      }
+    }
+
+    //@media screen and (max-width: $break-full-w) {
+    //  @include size($btn-wd*0.9, $btn-ht*0.9);
+    //  //@include scale-uniform(0.9);
+    //}
+    //@media screen and (max-width: $break-full-w - 10px) {
+    //  @include scale-uniform(0.8);
+    //}
+    //@media screen and (max-width: $break-full-w - 20px) {
+    //  @include scale-uniform(0.7);
+    //}
+  }
+
+
+}

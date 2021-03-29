@@ -1,0 +1,1 @@
+let SAS = {};//NOTE: this lets us use in strict mode otherwise SAS = typeof SAS === 'undefined' ? {} : SAS; line throws an error

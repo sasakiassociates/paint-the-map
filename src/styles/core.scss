@@ -1,0 +1,38 @@
+@mixin disableSelection {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+@mixin preventImageDrag {
+  -webkit-user-drag: none;
+}
+
+@mixin rounded($radius: 0.5em) {
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+  border-radius: $radius;
+}
+
+@mixin roundedTop($radius: 0.5em) {
+  border-top-left-radius: $radius;
+  border-top-right-radius: $radius;
+  -webkit-border-top-left-radius: $radius;
+  -webkit-border-top-right-radius: $radius;
+  -moz-border-top-left-radius: $radius;
+  -moz-border-top-right-radius: $radius;
+}
+
+@mixin scale-uniform($scale: 0.5) {
+  -ms-transform: scale($scale, $scale); /* IE 9 */
+  -webkit-transform: scale($scale, $scale); /* Safari */
+  transform: scale($scale, $scale);
+}
+
+@mixin size($w, $h) {
+  width: $w;
+  height: $h;
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Paint the Map</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no'/>
+    <!-- Note: using mapbox version 2.4.0 because 3.x removes support for canvas tiles -->
+    <link rel="stylesheet" href="../lib/css/smoothness/jquery-ui.min.css"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="../lib/js/jquery-ui.min.js"></script>
+    <script src="../lib/js/jquery.ui.touch-punch.min.js"></script>
+    <script src="../lib/js/jquery.mousewheel.min.js"></script>
+
+    <script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet'/>
+
+    <link rel="stylesheet" href="../../src/canvas-sketch/main.css"/>
+
+    <script src="../../src/SAS/core/SAS.js?v=0.01"></script>
+    <script src="../../src/SAS/core/EventHandler.js?v=0.01"></script>
+    <script src="../../src/SAS/core/ImageUndoRedo.js?v=0.01"></script>
+    <script src="../../src/SAS/core/UndoRedoManager.js?v=0.01"></script>
+    <script src="../../src/SAS/core/PenState.js?v=0.01"></script>
+    <script src="../../src/SAS/core/PaintBucket.js?v=0.01"></script>
+    <script src="../../src/SAS/SketchCanvas.js?v=0.01"></script>
+    <script src="../../src/SAS/Sampler2D.js?v=0.01"></script>
+    <script src="../../src/SAS/DrawingTools.js?v=0.01"></script>
+    <script src="../../src/SAS/MemoryTiles.js?v=0.01"></script>
+    <script src="../../src/SAS/GeoCoder.js?v=0.01"></script>
+    <script src="../../src/SAS/PixelMath.js?v=0.01"></script>
+
+</head>
+<body>
+<div id='map'></div>
+<canvas id="drawingCanvas" width="1000" height="700"></canvas>
+<script src="../../src/canvas-sketch/util.js?v=0.01"></script>
+<script src="options.js?v=0.01"></script>
+<script src="../../src/canvas-sketch/canvasSketch.js?v=0.01"></script>
+</body>
+</html>

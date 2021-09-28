@@ -16,11 +16,23 @@ SAS = (typeof SAS === 'undefined') ? {} : SAS;
         //region private fields and methods
         const _options = options;
         const _eventHandler = new SAS.EventHandler();
-        let _worker;
+        const _workers = {};
 
-        const _init = function () {
-            _worker = new Worker(options.pixelWorkFile);
-            _worker.onmessage = function (e) {
+        const MAX_WORKERS = 4;
+        const _workersArr = [];
+
+        const _assignWorker = function (num) {
+            if (num < MAX_WORKERS) {
+                _workersArr.push(_createWorker());
+                return _workersArr[_workersArr.length - 1];
+            }
+            return _workersArr[num % MAX_WORKERS]
+        }
+
+        const _createWorker = function () {
+            const worker = new Worker(options.pixelWorkFile);
+            const workerInfo = {worker, complete: false};
+            worker.onmessage = function (e) {
                 let countData = (e.data.result.counts) ? e.data.result.counts : e.data.result;
                 const hexData = {};
                 Object.keys(countData).forEach((k) => {
@@ -32,8 +44,10 @@ SAS = (typeof SAS === 'undefined') ? {} : SAS;
                         hexData[hex] = val.count;
                     }
                 });
+                workerInfo.complete = true;
                 _eventHandler.raiseEvent('pixelsCounted', [hexData, e.data.metaData]);
             };
+            return workerInfo
         };
 
         const _getPixelsInMeters = (zoom, lat) => {
@@ -127,7 +141,18 @@ SAS = (typeof SAS === 'undefined') ? {} : SAS;
         this.countCanvasPixels = function (canvas, data) {
             const ctx = canvas.getContext('2d');
             const canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            _worker.postMessage({jobData: canvasData, options: _options, metaData: data});//will call "pixelsCounted" event;
+            const tileId = `${data.tile.x}_${data.tile.y}`
+            //NOTE: not using terminate as its not clear it saves time, but too many threads can be slow
+            // if (_workers[tileId] && !_workers[tileId].complete) {
+            //     _workers[tileId].complete = true;
+            //     _workers[tileId].worker.terminate();//invalidate old calls if still running
+            //     _eventHandler.raiseEvent('onTerminate', tileId);
+            //     _workers[tileId] = null;
+            // }
+            if (!_workers[tileId]) {
+                _workers[tileId] = _assignWorker(Object.keys(_workers).length);
+            }
+            _workers[tileId].worker.postMessage({jobData: canvasData, options: _options, metaData: data});//will call "pixelsCounted" event;
         };
 
         this.getTilePosition = function (lat, lon, zoom) {
@@ -140,8 +165,24 @@ SAS = (typeof SAS === 'undefined') ? {} : SAS;
             return {tx, ty, x: Math.round(ix), y: Math.round(iy)};
         };
 
+        this.normalizeColor = function (color, palette, tol) {
+            const colorRgb = _hexToRGB(color);
+            let ans;
+            Object.keys(palette).forEach((id) => {
+                if (ans) return;
+                const k = palette[id].color;
+                const kRgb = _hexToRGB(k);
+                if (kRgb && Math.abs(colorRgb.r - kRgb.r) <= tol
+                    && Math.abs(colorRgb.g - kRgb.g) <= tol
+                    && Math.abs(colorRgb.b - kRgb.b) <= tol) {
+                    ans = k;
+                }
+            });
+            return ans;
+        }
+
         //endregion
 
-        _init();
+        // _init();
     }
 })();

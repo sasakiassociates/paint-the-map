@@ -6,6 +6,7 @@
 // Tiles are always stored at the maxZoom level natively, but can be drawn
 // This can be any zoom level, but if the delta between minZoom and maxZoom is too large, it generates a large number of maxZoom tiles for a small brush stroke drawn at minZoom.
 // A delta of 2 is recommended (giving 3 paintable zoom levels).
+
 let mapPaintOptions = {
     minZoom: gupInt('minZoom', 18),
     maxZoom: gupInt('maxZoom', 20)
@@ -20,8 +21,11 @@ let mapOptions = {
 };
 
 const mapBoxAccessToken = 'ENTER YOUR ACCESS TOKEN';
+const pixelWorkerDir = '../../src/worker';
 
 let startCenter = [gupFloat('lat', 42.3601), gupFloat('lon', -71.0589)];
+
+const DEBUG_MODE = false;
 
 const paletteOptions = {
     'color1': {color: '#90d343', title: 'Color 1'},

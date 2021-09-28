@@ -359,6 +359,9 @@ const EVENT_STOP = 'mouseup';
         this.canvas = function () {
             return _canvas;
         };
+        this.paintColorRgb = function () {
+            return _paintColor;
+        };
         //endregion
 
         _init();

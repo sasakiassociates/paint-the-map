@@ -48,7 +48,7 @@ SAS = (typeof SAS === 'undefined') ? {} : SAS;
         };
 
         const _disableSmoothing = function (ctx) {
-            ctx.mozImageSmoothingEnabled = false;
+            // ctx.mozImageSmoothingEnabled = false;
             ctx.webkitImageSmoothingEnabled = false;
             ctx.msImageSmoothingEnabled = false;
             ctx.imageSmoothingEnabled = false;
@@ -317,7 +317,9 @@ SAS = (typeof SAS === 'undefined') ? {} : SAS;
                 memoryTile.currentData = rawData;
                 _eventHandler.raiseEvent('tileUpdate', [memoryTile]);
                 _drawOtherZoomLevels(x, y, zoom, memoryTile);
+                return true;
             }
+            return false;
         };
 
         this.withTile = function (x, y, zoom, callback) {

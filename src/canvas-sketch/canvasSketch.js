@@ -1,4 +1,3 @@
-let dialogDone = false;
 let updateDrawingToolsState;
 
 let $drawingCanvas = $('#drawingCanvas');
@@ -6,21 +5,36 @@ let $drawingCanvas = $('#drawingCanvas');
 let userHasPainted = false;
 const sketchCanvas = new SAS.SketchCanvas($drawingCanvas[0], 1, true);
 const memoryTiles = new SAS.MemoryTiles(mapPaintOptions.minZoom, mapPaintOptions.maxZoom);
-const pixelMath = new SAS.PixelMath({storePositions: true, pixelWorkFile:'../../src/worker/pixelWork.js?v=0.6'});
+const pixelMath = new SAS.PixelMath({storePositions: false, pixelWorkFile:pixelWorkerDir+'/pixelWork.js?v=0.6'});
+const analysisCanvas = new SAS.AnalysisCanvas();
 
 let _saveOnEdit = false;
 let paintPalette = {};
-const selectedPal = 'lowSF';
 let canvasTiles;
 
+const MISMATCH = 'MISMATCH';
+const MATCH_TOL = 3;
 // const selectedPal = 'phase1';
 
 // sketchCanvas.setPaintColor(paintPalette[selectedPal]);
 
 let drawingTools;
+let countPixels;
 const $palette = $('<div class="palette">').appendTo('body');
 const $paintOpacity = $('<div class="paint-opacity">').appendTo('body');
 $('<div class="title">').text('Paint Opacity').appendTo($paintOpacity);
+
+const $flashCurrent = $('<button class="flash-current">').text('Highlight').appendTo('body');
+let flashCanvas;
+$flashCurrent.click(() => {
+    if (!flashCanvas) {
+        flashCanvas = analysisCanvas.findColorMatch($drawingCanvas[0], sketchCanvas.paintColorRgb(), MATCH_TOL);
+        $(flashCanvas).addClass('flash-canvas').appendTo('body');
+    } else {
+        $(flashCanvas).remove();
+        flashCanvas = null;
+    }
+})
 
 let _paintOpacity = 80;
 const _$paintOpacitySlider = $('<div class="paint-opacity-slider">').appendTo($paintOpacity).slider({
@@ -39,8 +53,17 @@ const _$paintOpacitySlider = $('<div class="paint-opacity-slider">').appendTo($p
 let lastSelectedPal;
 const updatePaintPalette = (pp, selectedPal) => {
     $palette.empty();
-    $('<div class = "palette-title">').text('Swatches').appendTo($palette)
+    $('<div class = "palette-title">').text('Swatches').appendTo($palette).click(function () {
+        $('.palette-option').toggle();
+    });
+    if (DEBUG_MODE) {
+        $('<button>').text('recount').appendTo($palette).click(function () {
+            countPixels();
+        });
+    }
     paintPalette = pp;
+    paintPalette[MISMATCH] = {color: MISMATCH, title: 'MISMATCHED PIXELS'};
+    console.log(paintPalette);
     Object.keys(paintPalette).forEach((k) => {
         const option = paintPalette[k];
         option.color = option.color.toUpperCase();//ensure consistency for pixel counts
@@ -100,7 +123,7 @@ const setupMap = function () {
 
     canvasTiles = L.tileLayer.canvas({maxZoom: mapPaintOptions.maxZoom, opacity: _paintOpacity / 100}).addTo(map);
 
-    const drawDebugInfo = false;
+    const drawDebugInfo = DEBUG_MODE;
     const drawnTiles = {};
     canvasTiles.drawTile = function (canvas, tilePoint, zoom) {
         const ctx = canvas.getContext('2d');
@@ -176,7 +199,7 @@ const setupMap = function () {
         // 'Satellite & Streets': L.mapbox.tileLayer('mapbox.streets-satellite'),
         'Satellite': L.mapbox.tileLayer('mapbox.satellite')
     };
-    let autoSelectedMap = layerOptions['Satellite'];
+    let autoSelectedMap = layerOptions['Monochrome'];
     autoSelectedMap.addTo(map);
 
     L.control.layers(layerOptions, {
@@ -335,29 +358,8 @@ const setupMap = function () {
 
     let pendingCount = 0;
 
-    pixelMath.addListener('pixelsCounted', function (countData, metaData) {
-        console.log('pixelsCounted');
-        const pixelSqM = pixelMath.getPixelArea(metaData.tile.x, metaData.tile.y, metaData.tile.zoom);
-        Object.keys(countData).forEach((k) => {
-            if (!(k in pixelSums)) {
-                console.warn('Unexpected color: ' + k);
-                return;
-            }
-            pixelSums[k] += (countData[k].count * pixelSqM);
-            countData[k].positions.forEach((pos, i) => {
-                pixelPositions[k].push([
-                    metaData.tile.x + pos[0] / 256,
-                    metaData.tile.y + pos[1] / 256,
-                ]);
-            });
-        });
-
-        // Object.keys(pixelPositions).forEach((k) => {
-        //     if (pixelPositions[k].length > 0) {
-        //         console.log(k + ': ' + pixelPositions[k].length);
-        //     }
-        // });
-
+    const updatePalette = () => {
+        const acreSqM = 4046.86;
         const countsById = {};
         Object.keys(paintPalette).forEach((k) => {
             const option = paintPalette[k];
@@ -367,15 +369,97 @@ const setupMap = function () {
             if (!pixelSum) {
                 pixelSum = '-';
             } else {
-                pixelSum = methods.displayArea(pixelSum);
+                pixelSum = (Math.round(1000 * pixelSum / acreSqM) / 1000) + 'ac';
             }
-            if (option.$count) option.$count.html(pixelSum);
+            if (option.$count) option.$count.text(pixelSum);
         });
+        return countsById;
+    }
 
+    const onComplete = () => {
         if (--pendingCount === 0) {
-            // console.log('ALL COUNTS COMPLETE');
+            console.log('ALL COUNTS COMPLETE');
+            Object.keys(pixelSums).forEach((k) => {
+                pixelSums[k] = 0;
+            });
+            Object.keys(pixelSumsByTile).forEach((tileId) => {
+                const sums = pixelSumsByTile[tileId];
+                Object.keys(pixelSums).forEach((k) => {
+                    if (sums[k]) pixelSums[k] += sums[k];
+                });
+            });
+            console.log('pixelSums MISMATCHED', pixelSums[MISMATCH]);
+            const countsById = updatePalette();
             if (methods.onPixelsCounted) methods.onPixelsCounted(countsById);
         }
+    }
+
+    pixelMath.addListener('onTerminate', function (tileId) {
+        onComplete();
+    });
+
+    const getCount = (countData, k) => {
+        if (countData[k] && countData[k].count) {
+            return countData[k].count;
+        }
+        return countData[k] || 0;
+    };
+
+    pixelMath.addListener('pixelsCounted', function (countData, metaData) {
+        const pixelSqM = pixelMath.getPixelArea(metaData.tile.x, metaData.tile.y, metaData.tile.zoom);
+        const tileId = `${metaData.tile.x}_${metaData.tile.y}`;
+        pixelSumsByTile[tileId] = {};
+        let verbose = false;//tileId === '74172_50606';
+        if (verbose) {
+            console.log('PIXELS COUNTED: ', JSON.stringify(countData));
+        }
+        Object.keys(countData).forEach((k) => {
+            // if (!(k in pixelSums)) {
+            const matchK = pixelMath.normalizeColor(k, paintPalette, MATCH_TOL);
+            if (matchK) {
+                if (!(matchK in countData)) {
+                    if (verbose) console.log('NO EXISTING countData key:', matchK, ' existing key is ', k);
+                    countData[matchK] = 0;
+                }
+                if (verbose) {
+                    console.log(matchK, countData[matchK], countData[k]);
+                }
+                countData[matchK] += countData[k];
+                if (matchK !== k) {
+                    delete countData[k];
+                }
+            } else {
+                if (verbose) {
+                    console.log('mismatch', countData[k]);
+                }
+                if (!countData[MISMATCH]) countData[MISMATCH] = 0;
+                countData[MISMATCH] += countData[k];
+                delete countData[k];
+
+                // console.warn(`Unexpected color: ${k} in tile ${tileId} - ${countData[k]} pixels`);
+            }
+            // }
+        });
+        if (verbose) {
+            console.log('COUNT DATA NORMALIZED: ', JSON.stringify(countData));
+        }
+        Object.keys(countData).forEach((k) => {
+            pixelSumsByTile[tileId][k] = getCount(countData, k) * pixelSqM;
+            if (countData[k].positions) {
+            countData[k].positions.forEach((pos, i) => {
+                pixelPositions[k].push([
+                    metaData.tile.x + pos[0] / 256,
+                    metaData.tile.y + pos[1] / 256,
+                ]);
+            });
+            }
+        });
+        onComplete();
+        // Object.keys(pixelPositions).forEach((k) => {
+        //     if (pixelPositions[k].length > 0) {
+        //         console.log(k + ': ' + pixelPositions[k].length);
+        //     }
+        // });
     });
 
     methods.getPixelColorAt = function (lat, lon) {
@@ -394,8 +478,10 @@ const setupMap = function () {
         memoryTiles.save(callback, postEndPoint);
     };
     methods.loadData = function (endPoint) {
+        console.log('loadData', endPoint);
         try {
             memoryTiles.loadUrl(endPoint, function () {
+                console.log('DATA LOADED - COUNT PIX');
                 countPixels();
             });
         } catch {
@@ -404,6 +490,7 @@ const setupMap = function () {
     };
 
     const pixelSums = {};
+    const pixelSumsByTile = {};
     const pixelPositions = {};
 
     methods.getColorKeys = () => Object.keys(paintPalette);
@@ -420,7 +507,9 @@ const setupMap = function () {
         return {x: pos[0], y: pos[1]};
     };
 
-    const countPixels = function () {
+    countPixels = function (updatedTiles) {
+        console.log('countPixels', updatedTiles);
+
         Object.keys(paintPalette).forEach((k) => {
             const option = paintPalette[k];
             pixelSums[option.color] = 0;
@@ -429,6 +518,8 @@ const setupMap = function () {
         // console.log('CLEAR '+JSON.stringify(pixelPositions));
 
         memoryTiles.withTiles(mapPaintOptions.maxZoom, function (tile) {
+            let tileId = `${tile.x}_${tile.y}`;
+            if (pixelSumsByTile[tileId] && updatedTiles && updatedTiles.indexOf(tileId) < 0) return;
             // console.log('CALL FOR COUNT', tile.x, tile.y, tile.zoom);
             pendingCount++;
             pixelMath.countCanvasPixels(tile.canvas, {
@@ -448,6 +539,7 @@ const setupMap = function () {
         // memoryTiles.saveUndoState();//save previous state before updating from canvas
         // console.log('Saved undo state...');
         //when the user finishes any drawing action, save all visible tiles at current zoom to memoryTiles
+        const updatedTiles = [];
         iterateVisibleTiles(function (x, y, zoom) {
             const tileAddress = x + '_' + y + '_' + zoom;
             const tileInfo = drawnTiles[tileAddress];
@@ -456,11 +548,14 @@ const setupMap = function () {
                 return;
             }
             const offset = $(tileInfo.canvas).offset();
-            memoryTiles.drawToMemory(x, y, zoom, sketchCanvas.canvas(), offset.left, offset.top);
+            const updated = memoryTiles.drawToMemory(x, y, zoom, sketchCanvas.canvas(), offset.left, offset.top);
             // console.log(x, y, zoom);
+            if (updated) {
+                updatedTiles.push(x + '_' + y);
+            }
         });
         memoryTiles.saveUndoState();
-        countPixels();
+        countPixels(updatedTiles);
         redrawVisibleFromMemory();
 
         if (methods.onCanvasUpdate) methods.onCanvasUpdate();

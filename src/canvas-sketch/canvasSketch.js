@@ -74,9 +74,13 @@ const updatePaintPalette = (pp, selectedPal) => {
             $('.palette-option').toggleClass('selected', false);
             option.$div.toggleClass('selected', true);
         });
-        $('<div class = "palette-swatch">').css('background', option.color).appendTo(option.$div);
+        const $swatch = $('<div class = "palette-swatch">').css('background', option.color).appendTo(option.$div);
         const $title = $('<div class="title">').text(option.title).appendTo(option.$div);
         option.$count = $('<div class="count">').text('-').appendTo(option.$div);
+        if (k===MISMATCH) {
+            option.$elemToHideIfEmpty = option.$div;
+            option.$elemToHideIfEmpty.hide();
+        }
     });
     if (selectedPal && paintPalette[selectedPal]) {
         paintPalette[selectedPal].$div.click();
@@ -316,13 +320,29 @@ const setupMap = function () {
         drawingTools.setEnabled(states);
     };
 
+
+    const explodeToMaxZoom = function (x, y, zoom, callback) {
+        if (zoom > mapPaintOptions.maxZoom) return;
+
+        const sides = 2;
+        for (let tx = 0; tx < sides; tx++) {
+            for (let ty = 0; ty < sides; ty++) {
+                if (zoom === mapPaintOptions.maxZoom) {
+                    callback(x + tx, y + ty, zoom);
+                } else {
+                    explodeToMaxZoom((x + tx) * 2, (y + ty) * 2, zoom + 1, callback);
+                }
+            }
+        }
+        // console.log('/======= ZOOM...');
+    };
+
     const iterateVisibleTiles = function (callback) {
         //https://stackoverflow.com/questions/24895166/how-to-get-coords-of-tiles-that-are-currently-visible
         // get bounds, zoom and tileSize
         const bounds = map.getPixelBounds();
         const zoom = map.getZoom();
         const tileSize = 256;
-
 
         // get NorthWest and SouthEast points
         const nwTilePoint = new L.Point(Math.floor(bounds.min.x / tileSize),
@@ -365,13 +385,16 @@ const setupMap = function () {
             const option = paintPalette[k];
             let pixelSum = pixelSums[option.color];
             countsById[k] = pixelSums[option.color];
-
+            if (option.$elemToHideIfEmpty) {
+                option.$elemToHideIfEmpty.toggle(pixelSum > 0);
+            }
             if (!pixelSum) {
                 pixelSum = '-';
             } else {
                 pixelSum = (Math.round(1000 * pixelSum / acreSqM) / 1000) + 'ac';
             }
             if (option.$count) option.$count.text(pixelSum);
+
         });
         return countsById;
     }
@@ -388,7 +411,9 @@ const setupMap = function () {
                     if (sums[k]) pixelSums[k] += sums[k];
                 });
             });
-            console.log('pixelSums MISMATCHED', pixelSums[MISMATCH]);
+            if (pixelSums[MISMATCH] > 0) {
+                console.warn('pixelSums MISMATCHED', pixelSums[MISMATCH]);
+            }
             const countsById = updatePalette();
             if (methods.onPixelsCounted) methods.onPixelsCounted(countsById);
         }
@@ -445,14 +470,14 @@ const setupMap = function () {
         }
         Object.keys(countData).forEach((k) => {
             pixelSumsByTile[tileId][k] = getCount(countData, k) * pixelSqM;
-            if (countData[k].positions) {
-                countData[k].positions.forEach((pos, i) => {
-                    pixelPositions[k].push([
-                        metaData.tile.x + pos[0] / 256,
-                        metaData.tile.y + pos[1] / 256,
-                    ]);
-                });
-            }
+            // if (countData[k].positions) {
+            //     countData[k].positions.forEach((pos, i) => {
+            //         pixelPositions[k].push([
+            //             metaData.tile.x + pos[0] / 256,
+            //             metaData.tile.y + pos[1] / 256,
+            //         ]);
+            //     });
+            // }
         });
         onComplete();
         // Object.keys(pixelPositions).forEach((k) => {
@@ -491,21 +516,21 @@ const setupMap = function () {
 
     const pixelSums = {};
     const pixelSumsByTile = {};
-    const pixelPositions = {};
+    // const pixelPositions = {};
 
     methods.getColorKeys = () => Object.keys(paintPalette);
-    methods.nextPosition = (k) => {
-        const option = paintPalette[k];
-        let pixelPosition = pixelPositions[option.color];
-        // console.log(option.color + ': ' + pixelPosition);
-
-        if (!pixelPosition) return false;
-
-        const n = pixelPosition.length;
-        if (n === 0) return false;
-        let pos = pixelPosition[Math.floor(Math.random() * n)];
-        return {x: pos[0], y: pos[1]};
-    };
+    // methods.nextPosition = (k) => {
+    //     const option = paintPalette[k];
+    //     let pixelPosition = pixelPositions[option.color];
+    //     // console.log(option.color + ': ' + pixelPosition);
+    //
+    //     if (!pixelPosition) return false;
+    //
+    //     const n = pixelPosition.length;
+    //     if (n === 0) return false;
+    //     let pos = pixelPosition[Math.floor(Math.random() * n)];
+    //     return {x: pos[0], y: pos[1]};
+    // };
 
     countPixels = function (updatedTiles) {
         console.log('countPixels', updatedTiles);
@@ -513,7 +538,7 @@ const setupMap = function () {
         Object.keys(paintPalette).forEach((k) => {
             const option = paintPalette[k];
             pixelSums[option.color] = 0;
-            pixelPositions[option.color] = [];
+            // pixelPositions[option.color] = [];
         });
         // console.log('CLEAR '+JSON.stringify(pixelPositions));
 
@@ -551,7 +576,9 @@ const setupMap = function () {
             const updated = memoryTiles.drawToMemory(x, y, zoom, sketchCanvas.canvas(), offset.left, offset.top);
             // console.log(x, y, zoom);
             if (updated) {
-                updatedTiles.push(x + '_' + y);
+                explodeToMaxZoom(x, y, zoom, function (x, y, zoom) {
+                    updatedTiles.push(x + '_' + y);
+                });
             }
         });
         memoryTiles.saveUndoState();

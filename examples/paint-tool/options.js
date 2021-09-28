@@ -27,7 +27,7 @@ const pixelWorkerDir = '../../src/worker';
 
 let startCenter = [gupFloat('lat', 42.3601), gupFloat('lon', -71.0589)];
 
-const DEBUG_MODE = false;
+const DEBUG_MODE = false;//set to true to turn on the debug map layer with tile addresses
 
 const paletteOptions = {
     'color1': {color: '#90d343', title: 'Color 1'},

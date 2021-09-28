@@ -4,8 +4,8 @@ let $drawingCanvas = $('#drawingCanvas');
 
 let userHasPainted = false;
 const sketchCanvas = new SAS.SketchCanvas($drawingCanvas[0], 1, true);
-const memoryTiles = new SAS.MemoryTiles(mapPaintOptions.minZoom, mapPaintOptions.maxZoom);
-const pixelMath = new SAS.PixelMath({storePositions: false, pixelWorkFile:pixelWorkerDir+'/pixelWork.js?v=0.6'});
+const memoryTiles = new SAS.MemoryTiles(mapPaintOptions.outZoom, mapPaintOptions.maxZoom);
+const pixelMath = new SAS.PixelMath({storePositions: false, pixelWorkFile: pixelWorkerDir + '/pixelWork.js?v=0.6'});
 const analysisCanvas = new SAS.AnalysisCanvas();
 
 let _saveOnEdit = false;
@@ -110,7 +110,7 @@ const setupMap = function () {
     const map = L.mapbox.map('map', null, mapOptions).setView(startCenter, mapOptions.initZoom);
     const methods = {
         displayArea: function (pixelSum) {
-            return Math.round (pixelSum).toLocaleString() + 'm&sup2;';
+            return Math.round(pixelSum).toLocaleString() + 'm&sup2;';
         }
     };
     const overlays = {};
@@ -446,12 +446,12 @@ const setupMap = function () {
         Object.keys(countData).forEach((k) => {
             pixelSumsByTile[tileId][k] = getCount(countData, k) * pixelSqM;
             if (countData[k].positions) {
-            countData[k].positions.forEach((pos, i) => {
-                pixelPositions[k].push([
-                    metaData.tile.x + pos[0] / 256,
-                    metaData.tile.y + pos[1] / 256,
-                ]);
-            });
+                countData[k].positions.forEach((pos, i) => {
+                    pixelPositions[k].push([
+                        metaData.tile.x + pos[0] / 256,
+                        metaData.tile.y + pos[1] / 256,
+                    ]);
+                });
             }
         });
         onComplete();

@@ -6,8 +6,10 @@
 // Tiles are always stored at the maxZoom level natively, but can be drawn
 // This can be any zoom level, but if the delta between minZoom and maxZoom is too large, it generates a large number of maxZoom tiles for a small brush stroke drawn at minZoom.
 // A delta of 2 is recommended (giving 3 paintable zoom levels).
+// optionally, you can set a different "outZoom" value to show painted areas visually - even when not at a "paintable" zoom
 
 let mapPaintOptions = {
+    outZoom: gupInt('outZoom', 10),
     minZoom: gupInt('minZoom', 18),
     maxZoom: gupInt('maxZoom', 20)
 };

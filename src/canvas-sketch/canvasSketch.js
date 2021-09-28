@@ -175,22 +175,15 @@ const setupMap = function () {
         maxZoom: 20,
         ext: 'png'
     });
-    // var Stadia_AlidadeSmooth = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png', {
-    //     maxZoom: 20,
-    //     attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-    // });
-    // var Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png', {
-    //     maxZoom: 20,
-    //     attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-    // });
-    // var USGS_USImageryTopo = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}', {
-    //     maxZoom: 20,
-    //     attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
-    // });
-    // var USGS_USTopo = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
-    //     maxZoom: 20,
-    //     attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
-    // });
+
+    var mapLink = '<a href="http://www.esri.com/">Esri</a>';
+    var wholink = 'i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+    var esriAerial = L.tileLayer(
+        'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; '+mapLink+', '+wholink,
+            maxZoom: 19,
+        })
+
 
     let layerOptions = {
         // 'Street Map': L.mapbox.tileLayer('mapbox.streets'),
@@ -201,9 +194,10 @@ const setupMap = function () {
         // 'USGS Satellite': USGS_USImageryTopo,
         // 'USGS Contours': USGS_USTopo,
         // 'Satellite & Streets': L.mapbox.tileLayer('mapbox.streets-satellite'),
-        'Satellite': L.mapbox.tileLayer('mapbox.satellite')
+        'Satellite': esriAerial,//note: only up to zoom 19
+        // 'Satellite': L.mapbox.tileLayer('mapbox.satellite')
     };
-    let autoSelectedMap = layerOptions['Monochrome'];
+    let autoSelectedMap = layerOptions['Satellite'];
     autoSelectedMap.addTo(map);
 
     L.control.layers(layerOptions, {

@@ -10,8 +10,8 @@
 
 let mapPaintOptions = {
     outZoom: gupInt('outZoom', 10),
-    minZoom: gupInt('minZoom', 18),
-    maxZoom: gupInt('maxZoom', 20)
+    minZoom: gupInt('minZoom', 17),
+    maxZoom: gupInt('maxZoom', 19)//set to match ESRI aerial max
 };
 
 const customOverlayTemplate = decodeURIComponent(gup('customOverlayTemplate'));
@@ -19,7 +19,7 @@ const customOverlayTemplate = decodeURIComponent(gup('customOverlayTemplate'));
 let mapOptions = {
     initZoom: 13,
     minZoom: 3,
-    maxZoom: 20
+    maxZoom: mapPaintOptions.maxZoom,
 };
 
 const mapBoxAccessToken = 'ENTER YOUR ACCESS TOKEN';

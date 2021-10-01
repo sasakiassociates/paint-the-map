@@ -382,12 +382,16 @@ const setupMap = function () {
             if (option.$elemToHideIfEmpty) {
                 option.$elemToHideIfEmpty.toggle(pixelSum > 0);
             }
-            if (!pixelSum) {
-                pixelSum = '-';
-            } else {
-                pixelSum = (Math.round(1000 * pixelSum / acreSqM) / 1000) + 'ac';
+            let pixelSumStr = '-';
+            if (pixelSum) {
+                //displayArea
+                if (methods.displayArea) {
+                    pixelSumStr = methods.displayArea(pixelSum);
+                } else {
+                    pixelSumStr = (Math.round(1000 * pixelSum / acreSqM) / 1000) + 'ac';
+                }
             }
-            if (option.$count) option.$count.text(pixelSum);
+            if (option.$count) option.$count.text(pixelSumStr);
 
         });
         return countsById;

@@ -346,9 +346,8 @@ SAS = (typeof SAS === 'undefined') ? {} : SAS;
         };
 
         this.save = function (callback, postEndPoint) {
-            postEndPoint = postEndPoint || 'https://13wb5f9l04.execute-api.us-east-1.amazonaws.com/staging';
+            postEndPoint = postEndPoint || 'https://[YOUR_ENDPOINT_FOR_SAVING]';
             const saveData = _serialize();
-            // $.post('https://13wb5f9l04.execute-api.us-east-1.amazonaws.com/staging', saveData);
             $.ajax
             ({
                 type: 'POST',

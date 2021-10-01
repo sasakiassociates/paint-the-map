@@ -46,8 +46,13 @@ function setupCustom(map, methods, overlays) {
     };
 
     //default display is in square meters, this method lets us convert to acres
-    const acreSqM = 4046.86;
+    // const acreSqM = 4046.86;
+    // methods.displayArea = (pixelSum) => {
+    //     return (Math.round(1000 * pixelSum / acreSqM) / 1000) + 'ac';
+    // };
+
+    const hectareSqM = 10000;
     methods.displayArea = (pixelSum) => {
-        return (Math.round(1000 * pixelSum / acreSqM) / 1000) + 'ac';
+        return (Math.round(1000 * pixelSum / hectareSqM) / 1000) + 'ha';
     };
 }

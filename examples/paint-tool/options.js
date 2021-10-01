@@ -30,12 +30,12 @@ let startCenter = [gupFloat('lat', 42.3601), gupFloat('lon', -71.0589)];
 const DEBUG_MODE = false;//set to true to turn on the debug map layer with tile addresses
 
 const paletteOptions = {
-    'color1': {color: '#90d343', title: 'Color 1'},
+    'color1': {color: '#6ead20', title: 'Color 1'},
     'color2': {color: '#9867ce', title: 'Color 2'},
     'color3': {color: '#d29934', title: 'Color 3'},
-    'color4': {color: '#57bfba', title: 'Color 4'},
-    'color5': {color: '#c85f45', title: 'Color 5'},
-    'color6': {color: '#82ae63', title: 'Color 6'},
+    'color4': {color: '#2aa8a3', title: 'Color 4'},
+    'color5': {color: '#9a361c', title: 'Color 5'},
+    'color6': {color: '#babf45', title: 'Color 6'},
     'color7': {color: '#c95d8d', title: 'Color 7'},
 };
 

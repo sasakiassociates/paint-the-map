@@ -37,4 +37,7 @@ Fill an enclosed area with the selected paint color.
 
 See examples/paint-tool for a simple example with configurable options.
 
+Live example:
+[maps.sasaki.com/paint-the-map/examples/paint-tool/](https://maps.sasaki.com/paint-the-map/examples/paint-tool/)
+
 ![Screenshot of PaintTheMap example](img/example.jpg)

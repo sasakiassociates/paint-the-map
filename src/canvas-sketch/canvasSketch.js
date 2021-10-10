@@ -436,29 +436,31 @@ const setupMap = function () {
         if (verbose) {
             console.log('PIXELS COUNTED: ', JSON.stringify(countData));
         }
+        const countDataNormalized = {};
+
         Object.keys(countData).forEach((k) => {
             // if (!(k in pixelSums)) {
             const matchK = pixelMath.normalizeColor(k, paintPalette, MATCH_TOL);
             if (matchK) {
                 if (!(matchK in countData)) {
                     if (verbose) console.log('NO EXISTING countData key:', matchK, ' existing key is ', k);
-                    countData[matchK] = 0;
+                    // countData[matchK] = 0;
                 }
                 if (verbose) {
                     console.log(matchK, countData[matchK], countData[k]);
                 }
-                if (matchK !== k) {
-                    countData[matchK] = countData[k];
-                    delete countData[k];
-                }
+                if (!countDataNormalized[matchK]) countDataNormalized[matchK] = 0;
+                countDataNormalized[matchK] += countData[k];
+                // if (matchK !== k) {
+                //     countData[matchK] = countData[k];
+                //     delete countData[k];
+                // }
             } else {
                 if (verbose) {
                     console.log('mismatch', countData[k]);
                 }
-                if (!countData[MISMATCH]) countData[MISMATCH] = 0;
-                countData[MISMATCH] += countData[k];
-                delete countData[k];
-
+                if (!countDataNormalized[MISMATCH]) countDataNormalized[MISMATCH] = 0;
+                countDataNormalized[MISMATCH] += countData[k];
                 // console.warn(`Unexpected color: ${k} in tile ${tileId} - ${countData[k]} pixels`);
             }
             // }
@@ -466,8 +468,8 @@ const setupMap = function () {
         if (verbose) {
             console.log('COUNT DATA NORMALIZED: ', JSON.stringify(countData));
         }
-        Object.keys(countData).forEach((k) => {
-            pixelSumsByTile[tileId][k] = getCount(countData, k) * pixelSqM;
+        Object.keys(countDataNormalized).forEach((k) => {
+            pixelSumsByTile[tileId][k] = getCount(countDataNormalized, k) * pixelSqM;
             // if (countData[k].positions) {
             //     countData[k].positions.forEach((pos, i) => {
             //         pixelPositions[k].push([

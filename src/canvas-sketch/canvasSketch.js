@@ -447,8 +447,8 @@ const setupMap = function () {
                 if (verbose) {
                     console.log(matchK, countData[matchK], countData[k]);
                 }
-                countData[matchK] += countData[k];
                 if (matchK !== k) {
+                    countData[matchK] = countData[k];
                     delete countData[k];
                 }
             } else {
